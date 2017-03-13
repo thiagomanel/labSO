@@ -1,4 +1,5 @@
-
+class PhysicalMemory:
+    def
 
 class VirtualMemory:
     def __init__(self):
@@ -10,8 +11,13 @@ class VirtualMemory:
 
 if __name__ = "__main__":
     # read workload from input file
-    # read parameters: virtual size, physical size, page_replacement_alg
+    # read parameters: virtual size, physical size, page_replacement_alg, clock
     # setup simulation
     # fire
     # collect results
     # write std out
+    count = 0
+    fault_counter = 0
+    for load in workload:
+        page_id, acc_mode = load
+        fault_counter += vmemory.access(page_id, acc_mode)
