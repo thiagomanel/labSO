@@ -1,5 +1,13 @@
 
 
+class VirtualMemory:
+    def __init__(self):
+        #this maps page_id to an entry such as (frame_id, mapped, r, m)
+        page_table = {}
+
+    def access(self, page_id, acc_mode):
+        pass
+
 if __name__ = "__main__":
     # read workload from input file
     # read parameters: virtual size, physical size, page_replacement_alg
