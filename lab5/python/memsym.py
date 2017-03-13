@@ -15,7 +15,13 @@ class VirtualMemory:
             self.page_table[i] = (-1, mapped, r, m)
 
     def access(self, page_id, acc_mode):
-        pass
+        (frame_id, mapped, r, m) = self.page_table[page_id]
+        if mapped:
+            self.phy_mem.access(frame_id, acc_mode)
+            self.page_table[page_id] = (frame_id, mapped, acc_mode)
+        else:
+            # need to create a new map between virtual and physical
+            # need to evict a page from physical if there is no room for it
 
 if __name__ = "__main__":
     # Usage: python $0 num_pages num_frames algo clock
@@ -31,6 +37,10 @@ if __name__ = "__main__":
     fault_counter = 0
     #fire
     for load in workload:
+        # call we fired clock (say, clock equals to 100) times, we tell the physical_mem to react to a clock event
+        if count % clock:
+            phy_mem.clock()
+
         page_id, acc_mode = load
         fault_counter += vmemory.access(page_id, acc_mode)
 
