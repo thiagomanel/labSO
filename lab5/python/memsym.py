@@ -1,5 +1,5 @@
 import sys
-from PhysicalMemory import phymem
+from phymem import PhysicalMemory
 
 class VirtualMemory:
     def __init__(self, npages, nframes, physicalMemory):
@@ -26,14 +26,14 @@ class VirtualMemory:
             self.phy_mem.access(frame_id, write_mode)
             self.page_table[page_id] = (frame_id, mapped, True, write_mode)
         else:
-            if (self.frame_counter < self.nframes):
+            if len(self.freeFrames) > 0:
                 new_frame_id = self.freeFrames.pop()
-                frame2page[new_frame_id] = page_id
+                self.frame2page[new_frame_id] = page_id
                 self.page_table[page_id] = (new_frame_id, True, True, write_mode)
                 self.phy_mem.put(new_frame_id)
                 self.phy_mem.access(new_frame_id, write_mode)
             else:
-                evicted_frame_id = self.alg.evict()
+                evicted_frame_id = self.phy_mem.evict()
                 page_id_out = self.frame2page.get(evicted_frame_id, None)
                 #update page out
                 self.page_table[page_id_out] = (-1, False, False, False)
@@ -45,6 +45,8 @@ class VirtualMemory:
                 #update frame2page
                 self.frame2page[evicted_frame_id] = page_id
                 self.phy_mem.access(evicted_frame_id, write_mode)
+                return 1
+        return 0
 
 if __name__ == "__main__":
 
@@ -58,7 +60,7 @@ if __name__ == "__main__":
     workload = []
     for line in sys.stdin.readlines():
         page_id, mode = line.split()
-        workload.append((page_id, mode == "w"))
+        workload.append((int(page_id), mode == "w"))
 
     # setup simulation
     phyMem = PhysicalMemory(alg)
@@ -72,9 +74,9 @@ if __name__ == "__main__":
         if count % clock:
             phy_mem.clock()
         page_id, acc_mode = load
-        fault_counter += vmemory.access(page_id, acc_mode)
+        fault_counter += vMem.access(page_id, acc_mode)
 
     #TODO
     # collect results
     # write output
-    print fault_counter, alg
+    print fault_counter, sys.argv[1:]
