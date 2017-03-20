@@ -79,4 +79,4 @@ if __name__ == "__main__":
     #TODO
     # collect results
     # write output
-    print fault_counter, sys.argv[1:]
+    print fault_counter, " ".join(sys.argv[1:])
