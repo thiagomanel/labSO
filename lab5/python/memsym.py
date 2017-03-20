@@ -1,5 +1,5 @@
 import sys
-import PhysicalMemory from phymem
+from PhysicalMemory import phymem
 
 class VirtualMemory:
     def __init__(self, npages, nframes, physicalMemory):
