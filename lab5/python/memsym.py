@@ -1,3 +1,4 @@
+import sys
 
 class VirtualMemory:
     def __init__(self, npages, physical_mem):
@@ -14,11 +15,11 @@ class VirtualMemory:
             m = False
             self.page_table[i] = (-1, mapped, r, m)
 
-    def access(self, page_id, acc_mode):
+    def access(self, page_id, write_mode):
         (frame_id, mapped, r, m) = self.page_table[page_id]
         if mapped:
-            self.phy_mem.access(frame_id, acc_mode)
-            self.page_table[page_id] = (frame_id, mapped, acc_mode)
+            self.phy_mem.access(frame_id, write_mode)
+            self.page_table[page_id] = (frame_id, mapped, True, write_mode)
         else:
             # need to create a new map between virtual and physical
             # need to evict a page from physical if there is no room for it
@@ -26,7 +27,10 @@ class VirtualMemory:
 if __name__ = "__main__":
     # Usage: python $0 num_pages num_frames algo clock
 
+
     # read workload from input file
+    for line in sys.stdin.readlines():
+        page_id,
     # read parameters
     # setup simulation
     # fire

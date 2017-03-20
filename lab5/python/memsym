@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#fifo, second-change, nru, aging, perfect
+#Usage: python $0 num_pages num_frames algo clock
+python memsym.py 10000 1000 nru 20
