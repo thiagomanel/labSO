@@ -1,7 +1,8 @@
 import sys
+import PhysicalMemory from phymem
 
 class VirtualMemory:
-    def __init__(self, npages, physical_mem):
+    def __init__(self, npages, nframes, physical_mem):
         #this maps page_id to an entry such as (frame_id, mapped, r, m)
         self.page_table = {}
         self.phy_mem = physical_mem
@@ -25,28 +26,34 @@ class VirtualMemory:
             # need to evict a page from physical if there is no room for it
 
 if __name__ = "__main__":
-    # Usage: python $0 num_pages num_frames algo clock
 
+    # Usage: python $0 num_pages num_frames algo clock
+    num_pages = int(sys.argv[1])
+    num_frames = int(sys.argv[2])
+    alg = sys.argv[3]
+    clock = int(sys.argv[4])
 
     # read workload from input file
+    workload = []
     for line in sys.stdin.readlines():
-        page_id,
-    # read parameters
-    # setup simulation
-    # fire
-    # collect results
-    # write output
+        page_id, mode = line.split()
+        workload.append(page_id, mode == "w")
 
+    # setup simulation
+    phyMem = PhysicalMemory(alg)
+    vMem = VirtualMemory(num_pages, num_frames, phyMem)
+
+    # fire
     count = 0
     fault_counter = 0
-    #fire
     for load in workload:
         # call we fired clock (say, clock equals to 100) times, we tell the physical_mem to react to a clock event
         if count % clock:
             phy_mem.clock()
-
         page_id, acc_mode = load
         fault_counter += vmemory.access(page_id, acc_mode)
 
-    #write output
-    print fault_counter
+    #TODO
+    # collect results
+    # write output
+    print fault_counter, alg
