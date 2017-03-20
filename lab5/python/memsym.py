@@ -2,11 +2,15 @@ import sys
 import PhysicalMemory from phymem
 
 class VirtualMemory:
-    def __init__(self, npages, nframes, physical_mem):
+    def __init__(self, npages, nframes, physicalMemory):
         #this maps page_id to an entry such as (frame_id, mapped, r, m)
         self.page_table = {}
-        self.phy_mem = physical_mem
+        self.phy_mem = physicalMemory
         self.__build_page_table__(npages)
+        self.frame_counter = 0
+        self.nframes = nframes
+        self.frame2page = {}
+        self.freeFrames = set(range(nframes))
 
     def __build_page_table__(self, npages):
         for i in range(npages):
@@ -22,8 +26,25 @@ class VirtualMemory:
             self.phy_mem.access(frame_id, write_mode)
             self.page_table[page_id] = (frame_id, mapped, True, write_mode)
         else:
-            # need to create a new map between virtual and physical
-            # need to evict a page from physical if there is no room for it
+            if (self.frame_counter < self.nframes):
+                new_frame_id = self.freeFrames.pop()
+                frame2page[new_frame_id] = page_id
+                self.page_table[page_id] = (new_frame_id, True, True, write_mode)
+                self.phy_mem.put(new_frame_id)
+                self.phy_mem.access(new_frame_id, write_mode)
+            else:
+                evicted_frame_id = self.alg.evict()
+                page_id_out = self.frame2page.get(evicted_frame_id, None)
+                #update page out
+                self.page_table[page_id_out] = (-1, False, False, False)
+
+                #allocate the new frame
+                self.phy_mem.put(evicted_frame_id)
+                #mudar mappeamento pagina in
+                self.page_table[page_id] = (evicted_frame_id, True, True, write_mode)
+                #update frame2page
+                self.frame2page[evicted_frame_id] = page_id
+                self.phy_mem.access(evicted_frame_id, write_mode)
 
 if __name__ = "__main__":
 
