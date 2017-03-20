@@ -46,7 +46,7 @@ class VirtualMemory:
                 self.frame2page[evicted_frame_id] = page_id
                 self.phy_mem.access(evicted_frame_id, write_mode)
 
-if __name__ = "__main__":
+if __name__ == "__main__":
 
     # Usage: python $0 num_pages num_frames algo clock
     num_pages = int(sys.argv[1])
