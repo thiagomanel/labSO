@@ -36,7 +36,7 @@ class VirtualMemory:
                 evicted_frame_id = self.phy_mem.evict()
                 assert type(evicted_frame_id) == int, "frameId returned by evict should be an int"
                 page_id_out = self.frame2page.get(evicted_frame_id, None)
-                assert evicted_frame_id is not None, "frameId returned by evict should be allocated"
+                assert page_id_out is not None, "frameId returned by evict should be allocated"
 
                 #update page out
                 self.page_table[page_id_out] = (-1, False, False, False)
