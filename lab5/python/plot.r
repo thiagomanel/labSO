@@ -1,0 +1,6 @@
+library("ggplot2")
+data = read.csv("output.data", header = TRUE)
+summary(data)
+p <- ggplot(data, aes(x=nframes, y=nfaults, color=alg))
+p <- p + geom_line()
+ggsave(p, file="plot.png")
