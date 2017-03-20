@@ -1,0 +1,10 @@
+npages=100
+clock=10
+
+for alg in fifo nru aging second-change
+do
+    for nframes in 4 8 16 32
+    do
+	python $npages $nframes $alg $cloc < load/10000.100.randon.r.in > 10000.100.randon.r.$alg.$nframes.in
+    done
+done
