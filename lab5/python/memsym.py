@@ -58,7 +58,7 @@ if __name__ == "__main__":
     workload = []
     for line in sys.stdin.readlines():
         page_id, mode = line.split()
-        workload.append(page_id, mode == "w")
+        workload.append((page_id, mode == "w"))
 
     # setup simulation
     phyMem = PhysicalMemory(alg)
