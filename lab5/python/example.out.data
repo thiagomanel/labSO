@@ -1,0 +1,9 @@
+nfaults,nframes,alg
+15000,6,opt
+25000,6,lru
+35000,6,clock
+45000,6,fifo
+5000,8,opt
+7000,8,lru
+9000,8,clock
+11000,8,fifo
