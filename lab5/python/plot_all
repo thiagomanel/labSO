@@ -1,12 +1,12 @@
-for output_file in `ls output/*out`
-do
-    #simulation output format
-    #fault_counter num_pages num_frames alg clock
+#!/bin/bash
 
-    #plot input format
-    #nfaults,nframes,alg
-    #15000,6,opt
-    echo "nfaults,nframes,alg" > $output_file.plot
-    cut -d" " -f1,3,4 $output_file | sed 's/ /\,/g' >> $output_file.plot
-    Rscript plot.r $output_file.plot
-done
+#simulation output format
+#fault_counter num_pages num_frames alg clock
+
+#plot input format
+#nfaults,nframes,alg
+#15000,6,opt
+
+echo "nfaults,nframes,alg" > output/mem.plot
+cat output/*out | cut -d" " -f1,3,4 | sed 's/ /\,/g' >> output/mem.plot
+Rscript plot.r output/mem.plot
