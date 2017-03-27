@@ -7,6 +7,6 @@ do
     #nfaults,nframes,alg
     #15000,6,opt
     echo "nfaults,nframes,alg" > $output_file.plot
-    cut -f1,3,4 $output_file | sed 's/ /\,/g' >> $output_file.plot
+    cut -d" " -f1,3,4 $output_file | sed 's/ /\,/g' >> $output_file.plot
     Rscript plot.r $output_file.plot
 done
