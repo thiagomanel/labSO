@@ -7,7 +7,7 @@
 # NOTE: there may be methods you don't need to modify, you must decide what
 # you need...
 
-def PhysicalMemory:
+class PhysicalMemory:
   ALGORITHM_AGING_NBITS = 8
   """How many bits to use for the Aging algorithm"""
 
