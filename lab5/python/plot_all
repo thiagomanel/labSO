@@ -1,0 +1,9 @@
+for f in `ls output/*out`
+do
+    #simulation output format
+    #fault_counter num_pages num_frames alg clock
+
+    #plot input format
+    #
+    sed 
+done
