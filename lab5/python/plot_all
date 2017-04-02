@@ -7,6 +7,9 @@
 #nfaults,nframes,alg
 #15000,6,opt
 
+# Note that this script expects that we have related file in the output directory. For example, we cannot mix
+# output generated from different input files in output directory.
+
 echo "nfaults,nframes,alg" > output/mem.plot
 cat output/*out | cut -d" " -f1,3,4 | sed 's/ /\,/g' >> output/mem.plot
 Rscript plot.r output/mem.plot
