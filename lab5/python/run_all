@@ -1,10 +1,17 @@
-npages=100
+#/bin/bash
+
+# This script exercises the real workload
+npages=1500000
 clock=10
 
-for alg in fifo nru aging second-chance
+for trace in trace.1 trace.2
 do
-    for nframes in 4 8 16 32
+    #for alg in fifo nru aging second-chance
+    for alg in fifo
     do
-	python memsym.py $npages $nframes $alg $clock < load/10000.100.random.r.in > output/10000.100.random.r.$alg.$nframes.out
+        for nframes in 4 8 16 32
+        do
+	    python memsym.py $npages $nframes $alg $clock < load/$trace > output/$trace.$alg.$nframes.out
+	done
     done
 done
