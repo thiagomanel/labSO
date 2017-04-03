@@ -2,7 +2,7 @@
 
 # This script exercises the real workload
 npages=1500000
-clock=10
+clock=200
 
 for trace in trace.1 trace.2
 do
