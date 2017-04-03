@@ -75,7 +75,7 @@ if __name__ == "__main__":
     for load in workload:
         # call we fired clock (say, clock equals to 100) times, we tell the physical_mem to react to a clock event
         if count % clock == 0:
-            phy_mem.clock()
+            phyMem.clock()
         count += 1
         page_id, acc_mode = load
         fault_counter += vMem.access(page_id, acc_mode)
