@@ -7,6 +7,9 @@ namespace xeu_utils {
 
 struct Command {
   Command();
+  Command(const Command& other);
+  Command& operator=(const Command& rhs);
+  ~Command();
 
   /**
    * NOTE: this is useful for using in exec*.
