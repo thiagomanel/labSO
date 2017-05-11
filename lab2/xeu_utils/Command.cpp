@@ -20,6 +20,7 @@ Command::Command(const Command& other) {
 
 Command& Command::operator=(const Command& other) {
     args_.clear();
+    argv_.clear();
     argv_.push_back(0);
     for (int i = 0; i < other.args_.size(); i++) {
         add_arg(other.args_[i]);
