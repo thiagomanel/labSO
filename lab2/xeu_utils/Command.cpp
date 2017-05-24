@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 
 namespace xeu_utils {
