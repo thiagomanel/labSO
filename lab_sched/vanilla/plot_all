@@ -1,3 +1,4 @@
+echo "mode start end" > all.data
 for dir in `ls -d output/*`;
 do
     echo $dir
