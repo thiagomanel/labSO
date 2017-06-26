@@ -3,7 +3,7 @@ args = commandArgs(trailingOnly=TRUE)
 
 data_path = args[1]
 
-#mode,sample,start,end
+#mode start end
 data = read.table(sep = " ", data_path, header = T)
 summary(data)
 

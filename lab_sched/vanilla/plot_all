@@ -10,3 +10,5 @@ do
 	cat $f | awk -v m=$mode '{ printf "%s %s %s\n", m, $1, $2 }' >> all.data
     done
 done
+
+Rscript plot.r all.data
