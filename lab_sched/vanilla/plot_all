@@ -1,0 +1,12 @@
+for dir in `ls -d output/*`;
+do
+    echo $dir
+    #sample.txt
+    for f in `find $dir -type f`;
+    do
+        mode=`basename $dir`
+	sample=`basename $f | cut -d "." -f1`
+	echo $joined_file
+	cat $f | awk
+    done
+done
