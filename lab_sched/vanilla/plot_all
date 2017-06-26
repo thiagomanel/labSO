@@ -6,7 +6,6 @@ do
     do
         mode=`basename $dir`
 	sample=`basename $f | cut -d "." -f1`
-	echo $joined_file
-	cat $f | awk
+	cat $f | awk -v m=$mode '{ printf "%s %s %s\n", m, $1, $2 }' >> all.data
     done
 done
