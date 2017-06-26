@@ -2,12 +2,38 @@
 
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 
 namespace xeu_utils {
 
 Command::Command() {
   argv_.push_back(0);
+}
+
+Command::Command(const Command& other) {
+    argv_.push_back(0);
+    for (int i = 0; i < other.args_.size(); i++) {
+        add_arg(other.args_[i]);
+    }
+}
+
+
+Command& Command::operator=(const Command& other) {
+    args_.clear();
+    argv_.clear();
+    argv_.push_back(0);
+    for (int i = 0; i < other.args_.size(); i++) {
+        add_arg(other.args_[i]);
+    }
+    return *this;
+}
+
+Command::~Command() {
+    for (int i = 0; i < argv_.size()-1; i++) {
+        delete[] argv_[i];
+    }
+    argv_.clear();
 }
 
 const char* Command::filename() {
@@ -24,7 +50,12 @@ const std::vector<std::string>& Command::args() {
 
 void Command::add_arg(const std::string& arg) {
   args_.push_back(arg);
-  argv_.back() = const_cast<char*>(args_.back().c_str());
+  
+  char* n = new char[arg.length()+1];
+  memcpy(n, arg.c_str(), arg.length());
+  n[arg.length()] = 0;
+  
+  argv_.back() = n;
   argv_.push_back(0);
 }
 
