@@ -4,15 +4,16 @@
 npages=1500000
 clock=200
 
+nframes=16
 for trace in trace.1 trace.2
 do
-    for alg in fifo nru aging second-chance
-    #for alg in fifo aging
+    #for alg in fifo nru aging second-chance
+    for alg in lru
     do
-        for nframes in 4 8 16 32
+        for tlbsize in 0 1 2 4 8 16
         do
 	    mkdir output/$trace
-	    python memsym.py $npages $nframes $alg $clock < load/$trace.in > output/$trace/$trace.$alg.$nframes.out
+	    python memsym.py $npages $nframes $tlbsize $alg $clock < load/$trace.in > output/$trace/$trace.$alg.$nframes.$tlbsize.out
 	done
     done
 done
