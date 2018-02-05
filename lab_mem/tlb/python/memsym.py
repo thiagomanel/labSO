@@ -83,11 +83,10 @@ if __name__ == "__main__":
             phyMem.clock()
         count += 1
         page_id, acc_mode = load
-        (tlb_hit, page_fault) = = vMem.access(page_id, acc_mode)
+        (tlb_hit, page_fault) = vMem.access(page_id, acc_mode)
         tlb_hit_counter += tlb_hit
         fault_counter += page_fault
 
-    #TODO
     # collect results
     # write output
-    print " ".join([tlb_hit_counter] + [fault_counter] + sys.argv[1:])
+    print " ".join([str(tlb_hit_counter)] + [str(fault_counter)] + sys.argv[1:])
