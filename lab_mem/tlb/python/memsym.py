@@ -60,8 +60,9 @@ if __name__ == "__main__":
     # Usage: python $0 num_pages num_frames algo clock
     num_pages = int(sys.argv[1])
     num_frames = int(sys.argv[2])
-    alg = sys.argv[3]
-    clock = int(sys.argv[4])
+    tlbsize = int(sys.argv[3])
+    alg = sys.argv[4]
+    clock = int(sys.argv[5])
 
     # read workload from input file
     workload = []
@@ -89,4 +90,4 @@ if __name__ == "__main__":
 
     # collect results
     # write output
-    print " ".join([str(tlb_hit_counter)] + [str(fault_counter)] + sys.argv[1:])
+    print " ".join([str(tlb_hit_counter), str(fault_counter), str(count)] + sys.argv[1:])
