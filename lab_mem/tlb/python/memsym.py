@@ -21,6 +21,10 @@ class VirtualMemory:
             self.page_table[i] = (-1, mapped, r, m)
 
     def access(self, page_id, write_mode):
+        #this should returns a tuple (int, int). The first element
+        #indicated whether we have a cache hit (1) or miss (0), while
+        #the second element indicates wheter we generated a page fault (1)
+        #or not (0)
         (frame_id, mapped, r, m) = self.page_table[page_id]
         if mapped:
             self.phy_mem.access(frame_id, write_mode)
@@ -48,8 +52,8 @@ class VirtualMemory:
                 #update frame2page
                 self.frame2page[evicted_frame_id] = page_id
                 self.phy_mem.access(evicted_frame_id, write_mode)
-                return 1
-        return 0
+                return (-1, 1)#note that -1 is wrong
+        return (-1, 0) #note that -1 is wrong
 
 if __name__ == "__main__":
 
@@ -72,15 +76,18 @@ if __name__ == "__main__":
     # fire
     count = 0
     fault_counter = 0
+    tlb_hit_counter = 0
     for load in workload:
         # call we fired clock (say, clock equals to 100) times, we tell the physical_mem to react to a clock event
         if count % clock == 0:
             phyMem.clock()
         count += 1
         page_id, acc_mode = load
-        fault_counter += vMem.access(page_id, acc_mode)
+        (tlb_hit, page_fault) = = vMem.access(page_id, acc_mode)
+        tlb_hit_counter += tlb_hit
+        fault_counter += page_fault
 
     #TODO
     # collect results
     # write output
-    print fault_counter, " ".join(sys.argv[1:])
+    print " ".join([tlb_hit_counter] + [fault_counter] + sys.argv[1:])

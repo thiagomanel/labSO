@@ -1,1 +1,1 @@
-This is the Naive page replacement policy simulator
+This is the Naive TLB simulator
