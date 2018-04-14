@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
+#include <sstream>
 
 using namespace xeu_utils;
 using namespace std;
@@ -14,27 +15,42 @@ void command_explanation(const Command& command) {
 
   // This prints the command in a format that can be run by our xeu. If you
   // run the printed command, you will get the exact same Command
-  cout << "$     repr(): " << command.repr() << endl;
-
-  // args[0] is the command/filename
-  cout << "$     args():";
-  for (int i = 0; i < command.args().size(); i++) {
-    cout << " [" << i << "] " << command.args()[i];
+  {
+    cout << "$     repr(): " << command.repr() << endl;
+    // cout << "$   (string): " << string(command) << endl; // does the same
+    // cout << "$ operator<<: " << command << endl; // does the same
   }
-  cout << endl;
+
+  // This is just args()[0] (e.g. in (ps aux), name() is "ps")
+  {
+    cout << "$     name(): " << command.name() << endl;
+  }
+
+  // Notice that args[0] is the command/filename
+  {
+    cout << "$     args():";
+    for (int i = 0; i < command.args().size(); i++) {
+      cout << " [" << i << "] " << command.args()[i];
+    }
+    cout << endl;
+  }
 
   /* Methods that return C-string (useful in exec* syscalls) */
 
-  // this is just the argv[0]
-  printf("$ filename(): %s\n", command.filename());
+  // this is just the argv()[0] (same as name(), but in C-string)
+  {
+    printf("$ filename(): %s\n", command.filename());
+  }
 
   // This is similar to args, but in the format required by exec* syscalls
   // After the last arg, there is always a NULL pointer (as required by exec*)
-  printf("$     argv():");
-  for (int i = 0; command.argv()[i]; i++) {
-    printf(" [%d] %s", i, command.argv()[i]);
+  {
+    printf("$     argv():");
+    for (int i = 0; command.argv()[i]; i++) {
+      printf(" [%d] %s", i, command.argv()[i]);
+    }
+    printf("\n");
   }
-  printf("\n");
 
 }
 
@@ -57,7 +73,8 @@ int main() {
   //   ps aux | grep xeu
   // And you will notice you have two commands: (ps aux) and (grep xeu)
   // This also handles errors for you. After calling this method you can be
-  // sure a command was parsed and is ready to be processed by you.
+  // sure that either (1) a command was parsed and is ready to be processed by
+  // you or (2) the user pressed ENTER without any input (commands.size()==0).
   const vector<Command> commands = StreamParser().parse().commands();
 
   // See this method to learn how to use "commands"

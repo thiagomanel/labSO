@@ -12,27 +12,24 @@ Command::Command() {
 }
 
 Command::Command(const Command& other) {
-    argv_.push_back(0);
-    for (int i = 0; i < other.args_.size(); i++) {
-        add_arg(other.args_[i]);
-    }
+  operator=(other);
 }
 
 Command& Command::operator=(const Command& other) {
-    args_.clear();
-    argv_.clear();
-    argv_.push_back(0);
-    for (int i = 0; i < other.args_.size(); i++) {
-        add_arg(other.args_[i]);
-    }
-    return *this;
+  args_.clear();
+  argv_.clear();
+  argv_.push_back(0);
+  for (size_t i = 0; i < other.args_.size(); i++) {
+    add_arg(other.args_[i]);
+  }
+  return *this;
 }
 
 Command::~Command() {
-    for (int i = 0; i < argv_.size()-1; i++) {
-        delete[] argv_[i];
-    }
-    argv_.clear();
+  for (size_t i = 0; i < argv_.size() - 1; i++) {
+    delete[] argv_[i];
+  }
+  argv_.clear();
 }
 
 const char* Command::filename() const {
@@ -42,6 +39,10 @@ const char* Command::filename() const {
 
 char* const* Command::argv() const {
   return &argv_[0];
+}
+
+std::string Command::name() const {
+  return args_.empty() ? "" : args_[0];
 }
 
 const std::vector<std::string>& Command::args() const {
@@ -54,21 +55,25 @@ std::string Command::repr() const {
   }
   std::stringstream ss;
   ss << escape_arg_if_needed(args_[0]);
-  for (int i = 1; i < args_.size(); i++) {
+  for (size_t i = 1; i < args_.size(); i++) {
     ss << " " << escape_arg_if_needed(args_[i]);
   }
   return ss.str();
 }
 
+Command::operator std::string() const {
+  return repr();
+}
+
+std::ostream& operator<<(std::ostream& os, const Command& command) {
+  return os << command.repr();
+}
+
 void Command::add_arg(const std::string& arg) {
-  args_.push_back(arg);
-
-  char* n = new char[arg.length()+1];
-  memcpy(n, arg.c_str(), arg.length());
-  n[arg.length()] = 0;
-
-  argv_.back() = n;
+  argv_.back() = new char[arg.length() + 1];
+  memcpy(argv_.back(), arg.c_str(), arg.length() + 1);
   argv_.push_back(0);
+  args_.push_back(arg);
 }
 
 std::string Command::repr(const std::vector<Command>& commands) {

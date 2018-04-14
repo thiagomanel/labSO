@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <vector>
 #include <string>
 
@@ -26,6 +27,11 @@ struct Command {
   char* const* argv() const;
 
   /**
+   * Returns the file/command name (like filename() above, but in std::string).
+   */
+  std::string name() const;
+
+  /**
    * Returns a list of all the args as a vector of strings.
    */
   const std::vector<std::string>& args() const;
@@ -35,6 +41,12 @@ struct Command {
    * and would produce the exact same command (i.e. same filename, same args).
    */
   std::string repr() const;
+  operator std::string() const;
+
+  /**
+   * Outputs command.repr() to the stream.
+   */
+  friend std::ostream& operator<<(std::ostream& os, const Command& command);
 
   /**
    * Pushes a new arg to the arg list of the command.
