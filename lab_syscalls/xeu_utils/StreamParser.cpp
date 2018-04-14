@@ -14,7 +14,7 @@ ParsingState StreamParser::parse(
   std::string& unparsed_input,
   std::istream& input,
   std::ostream& output
-) {
+) const {
   ParsingState p;
   std::string s;
   unparsed_input = "";
@@ -42,7 +42,7 @@ ParsingState StreamParser::parse(
 ParsingState StreamParser::parse(
   std::istream& input,
   std::ostream& output
-) {
+) const {
   std::string tmp;
   return parse(tmp, input, output);
 }

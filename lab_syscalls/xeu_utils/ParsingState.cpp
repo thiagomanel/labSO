@@ -11,19 +11,19 @@ namespace xeu_utils {
 ParsingState::ParsingState()
   : completed_(0), backslash_(0), quotes_(0), error_(0) {}
 
-bool ParsingState::error() {
+bool ParsingState::error() const {
   return error_;
 }
 
-bool ParsingState::completed() {
+bool ParsingState::completed() const {
   return completed_;
 }
 
-const std::vector<Command> ParsingState::commands() {
+const std::vector<Command> ParsingState::commands() const {
   return parsed_commands_;
 }
 
-std::string ParsingState::dump() {
+std::string ParsingState::dump() const {
   std::stringstream ss;
 
   // general

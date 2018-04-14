@@ -13,7 +13,7 @@ struct ParsingState {
   /**
    * Returns whether the parsing is in a final ("completed") state or not.
    */
-  bool completed();
+  bool completed() const;
 
   /**
    * Returns whether an user/syntax error occurred during parsing or not.
@@ -24,7 +24,7 @@ struct ParsingState {
    * Errors that currently set this flag to true are:
    * - Receiving a pipe symbol (|) when we have 0 args for the current command
    */
-  bool error();
+  bool error() const;
 
   /**
    * Returns a list of all the commands fully parsed. Note that each command is
@@ -34,13 +34,13 @@ struct ParsingState {
    *   commands()[1] = grep hh_server
    *   comamnds()[2] = wc -l
    */
-  const std::vector<Command> commands();
+  const std::vector<Command> commands() const;
 
   /**
    * Produces a string with a dump of the entire state. You can then print it:
    * std::cout << p.dump(); // where p is an instance of this ParsingState
    */
-  std::string dump();
+  std::string dump() const;
 
   /**
    * Calls parse_next(char) for each character in s, until either we call it

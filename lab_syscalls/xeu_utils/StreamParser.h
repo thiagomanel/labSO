@@ -21,7 +21,7 @@ struct StreamParser {
   ParsingState parse(
     std::istream& input=std::cin,
     std::ostream& output=std::cout
-  );
+  ) const;
 
   /**
    * Similar to parse(istream&, ostream&), but copies the input string to
@@ -31,7 +31,7 @@ struct StreamParser {
     std::string& unparsed_input,
     std::istream& input=std::cin,
     std::ostream& output=std::cout
-  );
+  ) const;
 
  private:
   std::string line_prefix_;
