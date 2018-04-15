@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Command.h"
+#include "IOFile.h"
 
 #include <string>
 #include <vector>
@@ -64,6 +65,7 @@ struct ParsingState {
   bool backslash_;
   bool error_;
   char quotes_;
+  IOFile io_;
   std::string current_arg_;
   Command current_command_;
   std::vector<Command> parsed_commands_;

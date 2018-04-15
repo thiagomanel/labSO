@@ -1,8 +1,10 @@
 #include "Command.h"
+#include "IOFile.h"
 #include "ParsingState.h"
 
 #include <sstream>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -55,7 +57,14 @@ std::string ParsingState::dump() const {
       }
     }
   }
-
+  // io_
+  {
+    ss
+      << "> io_: fd=" << io_.fd()
+      << " path=" << io_.path()
+      << " input=" << io_.is_input()
+      << std::endl;
+  }
   return ss.str();
 }
 
@@ -89,7 +98,7 @@ void ParsingState::parse_next(char c) {
     } else {
       complete_command(true /* set this as a final state */);
     }
-    break;
+    return;
 
    case '\\':
     if (backslash_ || quotes_ == SIMPLE_QUOTES) {
@@ -98,7 +107,7 @@ void ParsingState::parse_next(char c) {
     } else {
       backslash_ = true;
     }
-    break;
+    return;
 
    case SPECIAL_QUOTES:
    case SIMPLE_QUOTES:
@@ -113,7 +122,40 @@ void ParsingState::parse_next(char c) {
       quotes_ = (c == quotes_ ? 0 : c);
     }
     backslash_ = false;
-    break;
+    return;
+
+   case '>':
+   case '<':
+    if (backslash_ || quotes_ != NO_QUOTES) {
+      break; // fallthrough, not an io redirection
+    }
+    if (io_.fd() >= 0) {
+      complete_arg();
+      if (io_.fd() >= 0) {
+        error_ = true;
+        throw std::runtime_error(
+          "syntax error: << and >> are not supported.");
+      }
+    }
+    // get fd and complete arg
+    {
+      int fd = -1;
+      if (current_arg_.length() > 0) {
+        std::stringstream(current_arg_) >> fd;
+        std::stringstream ss; ss << fd;
+        if (fd < 0 || ss.str() != current_arg_) {
+          // Not a valid non-negative integer, so treat it as an arg, not an fd
+          complete_arg();
+          fd = -1;
+        } else {
+          current_arg_ = "";
+        }
+      }
+      fd = (fd < 0) ? (c == '>') : fd; // defaults: '<' = 0, '>' = 1
+      // set io
+      io_ = io_.with_fd(fd).with_input(c == '<');
+    }
+    return;
 
    case '|':
     // check if this is a pipe
@@ -125,34 +167,44 @@ void ParsingState::parse_next(char c) {
         error_ = true;
         throw std::runtime_error("syntax error near unexpected token `|'");
       }
-      break;
+      return;
     }
-    // fall to default, this is not a pipe!
-
-   default:
-    if (!backslash_ && quotes_ == NO_QUOTES && c <= 32 /* c is a delimiter */) {
-      complete_arg();
-    } else {
-      // [special case] (\<c> inside "") is kept exactly as \<c>
-      if (backslash_ && quotes_ == SPECIAL_QUOTES) {
-        current_arg_ += '\\';
-      }
-      current_arg_ += c;
-    }
-    backslash_ = false;
-    break;
+    break; // fallthrough, this is not a pipe!
   }
+
+  // default: treat as a normal character
+  if (!backslash_ && quotes_ == NO_QUOTES && c <= 32 /* c is a delimiter */) {
+    complete_arg();
+  } else {
+    // [special case] (\<c> inside "") is kept exactly as \<c>
+    if (backslash_ && quotes_ == SPECIAL_QUOTES) {
+      current_arg_ += '\\';
+    }
+    current_arg_ += c;
+  }
+  backslash_ = false;
 }
 
 void ParsingState::complete_arg() {
   if (current_arg_.length() > 0) {
-    current_command_.add_arg(current_arg_);
+    if (io_.fd() < 0) {
+      current_command_.add_arg(current_arg_);
+    } else {
+      current_command_.add_io(io_.with_path(current_arg_));
+    }
     current_arg_ = "";
+    io_ = IOFile();
   }
 }
 
 bool ParsingState::complete_command(bool in_final_state) {
   complete_arg(); // whatever is left here is part of the args of this command
+  if (io_.fd() >= 0) {
+    // something like (ps aux >) happened; no path specified for io redirection
+    error_ = true;
+    throw new std::runtime_error(
+      "syntax error near unexpected token `newline'");
+  }
   completed_ = in_final_state;
   if (!current_command_.args().empty()) {
     parsed_commands_.push_back(current_command_);
