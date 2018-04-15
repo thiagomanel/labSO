@@ -10,5 +10,5 @@ make # builds the binary
 Or, to make your life easier, build and run in the same line:
 
 ```bash
-make ./xeu && ./xeu
+make xeu && ./xeu
 ```
