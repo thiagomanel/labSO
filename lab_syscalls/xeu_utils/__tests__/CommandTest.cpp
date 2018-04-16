@@ -1,5 +1,7 @@
 #include "__lib__/catch.hpp"
 #include "../Command.h"
+
+#include <cstring>
 #include <iostream>
 
 using namespace xeu_utils;
