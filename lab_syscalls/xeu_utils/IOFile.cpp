@@ -1,11 +1,13 @@
 #include "IOFile.h"
 
+#include "ArgumentUtils.h"
+
 #include <sstream>
 #include <string>
 
 namespace xeu_utils {
 
-IOFile::IOFile(): fd_(-1), input_(false) {}
+IOFile::IOFile(): fd_(INVALID_FD), input_(false) {}
 IOFile::IOFile(int fd, bool input, std::string path)
   : fd_(fd), input_(input), path_(path) {}
 
@@ -31,8 +33,12 @@ std::string IOFile::repr() const {
   if ((fd_ && input_) || (fd_ != 1 && !input_)) {
     ss << fd_;
   }
-  ss << (input_ ? '<' : '>') << path_;
+  ss << (input_ ? '<' : '>') << ArgumentUtils::escape_if_needed(path_);
   return ss.str();
+}
+
+bool IOFile::has_fd() const {
+  return fd_ != INVALID_FD;
 }
 
 IOFile IOFile::with_fd(int fd) const {

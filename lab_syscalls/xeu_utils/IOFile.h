@@ -5,6 +5,7 @@
 namespace xeu_utils {
 
 struct IOFile {
+  static const int INVALID_FD = -1;
 
   IOFile();
   IOFile(int fd, bool input, std::string path);
@@ -29,6 +30,11 @@ struct IOFile {
    * Displays a representation of this IOFile e.g. 2>/path/a.txt
    */
   std::string repr() const;
+
+  /**
+   * Returns whether this has an fd or not (i.e. fd != INVALID_FD).
+   */
+  bool has_fd() const;
 
   /**
    * Create a new IOFile with some parameter changed.

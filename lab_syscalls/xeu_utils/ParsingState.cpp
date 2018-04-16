@@ -4,7 +4,6 @@
 
 #include <sstream>
 #include <stdexcept>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -129,9 +128,9 @@ void ParsingState::parse_next(char c) {
     if (backslash_ || quotes_ != NO_QUOTES) {
       break; // fallthrough, not an io redirection
     }
-    if (io_.fd() >= 0) {
+    if (io_.has_fd()) {
       complete_arg();
-      if (io_.fd() >= 0) {
+      if (io_.has_fd()) {
         error_ = true;
         throw std::runtime_error(
           "syntax error: << and >> are not supported.");
@@ -139,19 +138,19 @@ void ParsingState::parse_next(char c) {
     }
     // get fd and complete arg
     {
-      int fd = -1;
+      int fd = IOFile::INVALID_FD;
       if (current_arg_.length() > 0) {
         std::stringstream(current_arg_) >> fd;
         std::stringstream ss; ss << fd;
-        if (fd < 0 || ss.str() != current_arg_) {
+        if (fd == IOFile::INVALID_FD || ss.str() != current_arg_) {
           // Not a valid non-negative integer, so treat it as an arg, not an fd
           complete_arg();
-          fd = -1;
+          fd = IOFile::INVALID_FD;
         } else {
           current_arg_ = "";
         }
       }
-      fd = (fd < 0) ? (c == '>') : fd; // defaults: '<' = 0, '>' = 1
+      fd = (fd == IOFile::INVALID_FD) ? (c == '>') : fd; // '<' = 0, '>' = 1
       // set io
       io_ = io_.with_fd(fd).with_input(c == '<');
     }
@@ -187,10 +186,10 @@ void ParsingState::parse_next(char c) {
 
 void ParsingState::complete_arg() {
   if (current_arg_.length() > 0) {
-    if (io_.fd() < 0) {
-      current_command_.add_arg(current_arg_);
-    } else {
+    if (io_.has_fd()) {
       current_command_.add_io(io_.with_path(current_arg_));
+    } else {
+      current_command_.add_arg(current_arg_);
     }
     current_arg_ = "";
     io_ = IOFile();
@@ -199,7 +198,7 @@ void ParsingState::complete_arg() {
 
 bool ParsingState::complete_command(bool in_final_state) {
   complete_arg(); // whatever is left here is part of the args of this command
-  if (io_.fd() >= 0) {
+  if (io_.has_fd()) {
     // something like (ps aux >) happened; no path specified for io redirection
     error_ = true;
     throw new std::runtime_error(

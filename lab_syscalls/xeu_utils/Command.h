@@ -82,23 +82,7 @@ struct Command {
     bool show_io=true
   );
 
-  /**
-   * Escapes an arg and embeds it in double quotes.
-   */
-  static std::string escape_arg(const std::string& unescaped_arg);
-
-  /**
-   * Escapes an arg and embeds it in double quotes if needed. If escaping is
-   * not necessary, just returns the arg unmodified. See requires_escaping().
-   */
-  static std::string escape_arg_if_needed(const std::string& unescaped_arg);
-
  private:
-  /**
-   * Returns whether a character inside an arg would require escaping or not.
-   */
-  static bool requires_escaping(char c);
-
   std::vector<char*> argv_; // stores the data in C string format (for exec*)
   std::vector<std::string> args_; // stores the data as C++ strings
   std::vector<IOFile> io_; // stores the redirection data

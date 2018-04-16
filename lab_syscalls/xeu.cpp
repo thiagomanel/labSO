@@ -91,10 +91,10 @@ int main() {
   // Waits for the user to input a command and parses it. Commands separated
   // by pipe, "|", generate multiple commands. For example, try to input
   //   ps aux | grep xeu
+  // commands.size() would be 2: (ps aux) and (grep xeu)
   // If the user just presses ENTER without any command, commands.size() is 0
   const vector<Command> commands = StreamParser().parse().commands();
 
-  // See this method to learn how to use "commands"
   commands_explanation(commands);
 
   return 0;

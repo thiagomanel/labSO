@@ -1,3 +1,4 @@
+#include "ArgumentUtils.h"
 #include "Command.h"
 #include "IOFile.h"
 
@@ -63,9 +64,9 @@ std::string Command::repr(bool show_io) const {
     return "";
   }
   std::stringstream ss;
-  ss << escape_arg_if_needed(args_[0]);
+  ss << ArgumentUtils::escape_if_needed(args_[0]);
   for (size_t i = 1; i < args_.size(); i++) {
-    ss << " " << escape_arg_if_needed(args_[i]);
+    ss << " " << ArgumentUtils::escape_if_needed(args_[i]);
   }
   if (show_io) {
     for (size_t i = 0; i < io_.size(); i++) {
@@ -106,33 +107,6 @@ std::string Command::repr(const std::vector<Command>& commands, bool show_io) {
     ss << commands[i].repr(show_io);
   }
   return ss.str();
-}
-
-std::string Command::escape_arg(const std::string& unescaped_arg) {
-  std::stringstream ss;
-  ss << '"';
-  for (size_t i = 0; i < unescaped_arg.length(); i++) {
-    char c = unescaped_arg[i];
-    if (c == '"' || c == '\\') {
-      ss << '\\';
-    }
-    ss << c;
-  }
-  ss << '"';
-  return ss.str();
-}
-
-std::string Command::escape_arg_if_needed(const std::string& unescaped_arg) {
-  for (size_t i = 0; i < unescaped_arg.length(); i++) {
-    if (requires_escaping(unescaped_arg[i])) {
-      return escape_arg(unescaped_arg);
-    }
-  }
-  return unescaped_arg;
-}
-
-bool Command::requires_escaping(char c) {
-  return c <= 32 || c == '\'' || c == '"' || c == '|' || c == '\\';
 }
 
 };

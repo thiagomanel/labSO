@@ -1,14 +1,18 @@
-## How to build and run the code
-
-Run the following commands:
+## Como compilar e executar
 
 ```bash
-make # builds the binary
-./xeu # runs the binary
+make # compila
+./xeu # roda o binário
+
+# Ou, em uma linha:
+make && ./xeu
 ```
 
-Or, to make your life easier, build and run in the same line:
+## xeu_utils
 
+No `xeu.cpp` há uma explicação do que pode ser útil para seu lab. Se alterar
+algo na pasta `xeu_utils`, recomendo rodar os testes para verificar se ainda
+está tudo funcionando:
 ```bash
-make xeu && ./xeu
+make test  # requer c++11
 ```
