@@ -4,7 +4,9 @@ Repositório de código para disciplina Laboratório de Sistemas Operacionais da
 
 ## Roteiros
 
-* [Roteiro 0 - Estudando system calls e aspectos básico de programação UNIX](https://docs.google.com/document/d/18vOlXJbqk2xwRVMFJBTmzobs3cS6433cWDHhP5IEgfs/edit?usp=sharing)
+* [Lab 1 - Estudando system calls e aspectos básico de programação UNIX](https://docs.google.com/document/d/18vOlXJbqk2xwRVMFJBTmzobs3cS6433cWDHhP5IEgfs/edit?usp=sharing)
+
+* [Lab 2 - Implementação de escalonamento baseado em prioridades](https://docs.google.com/document/d/1zygFuz2wHbg9nH3U-xiMiGM-5WQ4hrNQFza1ftwpiq4/edit?usp=sharing)
 
 ## Histórico
 
