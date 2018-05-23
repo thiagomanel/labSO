@@ -62,10 +62,32 @@ ordered_process_list = []
 
 def run_simulation():
 
+    def enum(**enums):
+        return type('Enum', (), enums)
+
+    event_types = (ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
+
+    def next_event():
+        pass
+
+    #oh, boy! stop worring and love non-OO code
+
     #get the next event
-    #check its type
-    #call the handler associated witht the type
-    pass
+    event = next_event()
+    while(event):
+        e_type, timestamp, context = event
+        #check its type
+        #call the handler associated witht the type
+        if (e_type == event_types.SCHEDULE):
+            #remove process from cpu
+            #call schedule hook
+            #check process to enter cpu is not None
+            #   check service time and usage time
+            #   verify (service_time - usage_time) < slice_interval
+            #       add EXIT_PROC event
+        elif (e_type == event_tyeps.ALLOC_PROC):
+            #parse context and create the process object
+            #call the pluging hook
 
 if __name__ == '__main__':
     wlp = WorkloadParser()
