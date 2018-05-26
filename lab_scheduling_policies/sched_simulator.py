@@ -1,31 +1,5 @@
 from sys import stderr
-
-class Process(object):
-    def __init__(self, timestamp, pid, priority, service_t):
-        #FIXME: add usage time to be updated by the engine
-        self.timestamp = timestamp
-        self.pid = pid
-        self.priority = priority
-        self.service_t = service_t
-
-    def get_timestamp(self):
-        return self.timestamp
-
-    def get_pid(self):
-        return self.pid
-
-    def get_priority(self):
-        return self.priority
-
-    def get_service_t(self):
-        return self.service_t
-
-    def remaining_service_time(self):
-        pass
-
-    def __repr__(self):
-        return str(self.__dict__)
-
+from process import Process
 
 class WorkloadParser(object):
     def parse(self, filename):
@@ -68,12 +42,8 @@ def run_simulation():
     def enum(**enums):
         return type('Enum', (), enums)
 
-    event_types = (ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
-
     def next_event():
         pass
-
-    running_process = None
 
     def take_cpu():
         pid = None
@@ -82,12 +52,24 @@ def run_simulation():
         running_process = None
         return pid
 
-
     def enter_cpu(process):
         running_process = process
 
     def build_process(event_context):
         pass
+
+    def remaining_service_time(process):
+        return process.get_service_t() - process.get_usage_t()
+
+    def update_clock(current_t):
+        pass
+
+    def now():
+        pass
+
+    running_process = None
+    event_types = (ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
+    before = now()
 
     #oh, boy! stop worring and love non-OO code
     event = next_event()
@@ -102,7 +84,7 @@ def run_simulation():
             process_to_enter = schedule(pid)
 
             if (process_to_enter):
-                if (process_to_enter.remaining_service_time() < slice_interval):
+                if (remaining_service_time(process_to_enter) < slice_interval):
                     #we should add a EXIT event
                     pass
                 else:
