@@ -17,7 +17,7 @@ def build_process_file():
         )
         timestamp_c += randint(1, 50)
         pid_c += 1
-    
+
     f.writelines(proc_list)
     f.close()
 

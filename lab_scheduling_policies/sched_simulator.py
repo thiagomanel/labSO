@@ -35,15 +35,13 @@ def schedule(out_process_pid):
     """
     pass
 
-ordered_process_list = []
-
-def run_simulation():
-
-    def enum(**enums):
-        return type('Enum', (), enums)
+def run_simulation(events):
 
     def next_event():
-        pass
+        try:
+            return events.pop(0)
+        except IndexError:
+            return None
 
     def take_cpu():
         pid = None
@@ -68,7 +66,6 @@ def run_simulation():
         pass
 
     running_process = None
-    event_types = (ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
     before = now()
 
     #oh, boy! stop worring and love non-OO code
@@ -84,15 +81,28 @@ def run_simulation():
             process_to_enter = schedule(pid)
 
             if (process_to_enter):
-                if (remaining_service_time(process_to_enter) < slice_interval):
+                if (remaining_service_time(process_to_enter)
+                        < slice_interval):
                     #we should add a EXIT event
                     pass
                 else:
                     pass
-        elif (e_type == event_tyeps.ALLOC_PROC):
+        elif (e_type == event_types.ALLOC_PROC):
             new_process = build_process(context)
             #call the pluging hook
-            alloc_process(new_process)
+            alloc_proc(new_process)
+
+def enum(**enums):
+    return type('Enum', (), enums)
+
+event_types = enum(ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
+
+def alloc_proc_events(processes):
+    events = []
+    for proc in processes:
+        event = (event_types.ALLOC_PROC, proc.get_timestamp(), proc)
+        events.append(event)
+    return events
 
 if __name__ == '__main__':
     #read the args
@@ -100,10 +110,16 @@ if __name__ == '__main__':
     #parse the workload file
     wlp = WorkloadParser()
     ordered_process_list = wlp.parse('workload_file.ffd')
+    events = alloc_proc_events(ordered_process_list)
 
+    #TODO:
     #run the simulator config
         #interrupt interval
         #tick time
+
     #pass the arg to run_simulation
     #get the return values from run_simulation
     #generate the raw output to the standard output
+    output = run_simulation(events)
+    for out_sample in output:
+        print out_sample
