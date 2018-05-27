@@ -1,5 +1,7 @@
 from sys import stderr
 from process import Process
+from sched_policy import Scheduler
+import bisect
 
 class WorkloadParser(object):
     def parse(self, filename):
@@ -15,27 +17,27 @@ class WorkloadParser(object):
             proc_list.append(Process(timestamp, pid, priority, service_t))
         return proc_list
 
-def now():
-    #to be implemented - engine method
-    """Return the current logical timestamp"""
-    pass
-
-def alloc_proc(process):
-    #plugin method
-    """Update the data structures to recognize a new process was created"""
-    pass
-
-def schedule(out_process_pid):
-    #plugin method
-    """Return the next process to run in the cpu.
-
-    out_process_pid -- the pid of the process that just left the cpu, or None
-                in case there was no process running. The engine is responsible
-                for updating the usage time.
-    """
-    pass
-
 def run_simulation(events):
+
+    class Clock:
+        current_time = 0
+        @classmethod
+        def now(cls):
+            return Clock.current_time
+
+    class CPU:
+        def __init__(self):
+            self.running_proc = None
+
+        def take_cpu(self):
+            pid = None
+            if self.running_proc:
+                pid = self.runing_proc.get_pid()
+            self.running_proc = None
+            return pid
+
+        def enter_cpu(self, process):
+            self.running_proc = process
 
     def next_event():
         try:
@@ -43,83 +45,84 @@ def run_simulation(events):
         except IndexError:
             return None
 
-    def take_cpu():
-        pid = None
-        if running_process:
-            pid = runing_process.get_pid()
-        running_process = None
-        return pid
+    def add_event(event):
+        bisect.insort_left(events, event)
 
-    def enter_cpu(process):
-        running_process = process
-
-    def build_process(event_context):
-        pass
+    def has_next_event():
+        return len(events) > 0
 
     def remaining_service_time(process):
         return process.get_service_t() - process.get_usage_t()
 
-    def update_clock(current_t):
-        pass
+    cpu = CPU()
+    scheduler = Scheduler()
 
-    def now():
-        pass
+    output = []
 
-    running_process = None
-    before = now()
+    while True:
+        event = next_event()
+        if (not event): break
+        Clock.current_time = event.get_timestamp()
 
-    #oh, boy! stop worring and love non-OO code
-    event = next_event()
-    while(event):
-        #oh, boy! stop worring and love non-OO code
-        e_type, timestamp, context = event
+        if (event.get_type() == event_types.SCHEDULE):
+            #remove current process
+            pid = cpu.take_cpu()
+            if (pid):
+                #plugin hook
+                process_to_enter = scheduler.schedule(pid)
+                if (process_to_enter):
+                    if (remaining_service_time(process_to_enter)
+                            < slice_interval):
+                        #TODO:we should add a EXIT event
+                        pass
+                    else:
+                        cpu.enter(process_to_enter)
+            if (has_next_event()):
+                #if we were not done yet, add the next SCHEDULE event
+                add_event(Event(event_types.SCHEDULE, Clock.now() + SLICE_DURATION, None))
 
-        if (e_type == event_types.SCHEDULE):
-            #remove process from cpu
-            pid = take_cpu()
-            #call the plugin hook
-            process_to_enter = schedule(pid)
+        elif (event.get_type() == event_types.ALLOC_PROC):
+            new_process = event.get_context()
+            #plugin hook
+            scheduler.alloc_proc(new_process)
 
-            if (process_to_enter):
-                if (remaining_service_time(process_to_enter)
-                        < slice_interval):
-                    #we should add a EXIT event
-                    pass
-                else:
-                    pass
-        elif (e_type == event_types.ALLOC_PROC):
-            new_process = build_process(context)
-            #call the pluging hook
-            alloc_proc(new_process)
+    return output
 
 def enum(**enums):
     return type('Enum', (), enums)
-
 event_types = enum(ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
 
-def alloc_proc_events(processes):
-    events = []
-    for proc in processes:
-        event = (event_types.ALLOC_PROC, proc.get_timestamp(), proc)
-        events.append(event)
-    return events
+class Event(object):
+    def __init__(self, event_type, timestamp, context):
+        self.event_type = event_type
+        self.timestamp = timestamp
+        self.context = context
+    def __lt__(self, other):
+        return self.timestamp < other.timestamp
+    def __gt__(self, other):
+        return self.timestamp < other.timestamp
+    def __str__(self):
+        return 'type: ' + str(self.event_type) + ' stamp: ' + str(self.timestamp) + ' context: ' + str(self.context)
+    def get_type(self):
+        return self.event_type
+    def get_timestamp(self):
+        return self.timestamp
+    def get_context(self):
+        return self.context
+
+SLICE_DURATION = 20
 
 if __name__ == '__main__':
-    #read the args
     #read workload file in the standard directory
-    #parse the workload file
     wlp = WorkloadParser()
     ordered_process_list = wlp.parse('workload_file.ffd')
-    events = alloc_proc_events(ordered_process_list)
+    events = [Event(event_types.ALLOC_PROC, proc.get_timestamp(), proc)
+                for proc in ordered_process_list]
 
-    #TODO:
-    #run the simulator config
-        #interrupt interval
-        #tick time
+    #add an schedule event to proper fire the engine
+    events.insert(0, Event(event_types.SCHEDULE, 0, None))
 
-    #pass the arg to run_simulation
-    #get the return values from run_simulation
-    #generate the raw output to the standard output
+    #fire
     output = run_simulation(events)
     for out_sample in output:
         print out_sample
