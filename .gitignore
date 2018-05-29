@@ -1,3 +1,4 @@
 .vscode
-*/.pyc
-*/.py~
+*.pyc
+*.py~
+*.ffd

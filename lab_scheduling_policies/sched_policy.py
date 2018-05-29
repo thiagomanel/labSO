@@ -1,6 +1,6 @@
 QS_SIZE           = 32
-TICKS_PER_SECOND  = 20
-BASELINE_PRIORITY = 50
+TICKS_PER_SECOND  = 2
+BASELINE_PRIORITY = 20
 
 class Scheduler:
     """ Scheduler Simulation
@@ -21,7 +21,7 @@ class Scheduler:
         in case there was no process running. The engine is responsible
         for updating the usage time.
         """
-        _update_proc_fields(delta_t)
+        self._update_proc_fields(delta_t)
         proc_to_alloc = None
         for class_ in self.qs:
             if class_:
@@ -32,19 +32,20 @@ class Scheduler:
     def alloc_proc(self, process, delta_t):
         self._update_proc_fields(delta_t)
         """Update the data structures to recognize a new process was created"""
-        _update_proc_fields(delta_t)
-        p_index_class = calculate_class(process.priority)
+        self._update_proc_fields(delta_t)
+        p_index_class = self.calculate_class(process.priority)
         self.qs[p_index_class].append(process)
 
     def exit(self, process_pid):
         pass
 
-    def calculate_class(ker_priority):
+    def calculate_class(self, ker_priority):
         index_class = 0
         for i in xrange(0, 127, 4):
             if i <= ker_priority <= i + 3:
                 return index_class
             index_class += 1
+        return index_class -1
 
 
     def _update_proc_fields(self, delta_t):
@@ -56,7 +57,7 @@ class Scheduler:
                 if proc.state == 'RUNNABLE':
                     p_runnable_c += 1
 
-            load_average = p_runnable_c / len(self.qs[i])
+            load_average = (p_runnable_c / len(self.qs[i])) if len(self.qs[i]) != 0 else 0
             for proc in self.qs[i]:
                 decay_factor = (2 * load_average)/(2 * load_average + 1)
                 proc.p_cpu -= (decay_factor * delta_t) # Decrement for each second.
@@ -64,8 +65,13 @@ class Scheduler:
                     proc.p_cpu += (TICKS_PER_SECOND * delta_t) # Incrememt for each tick.
 
                 # recalculate ker_priority.
-                proc.ker_priority = BASELINE_PRIORITY + (self.p_cpu / 4) + (self.priority * 2)
-                class_index = calculate_class(proc.ker_priority)
+                proc.ker_priority = BASELINE_PRIORITY + (proc.p_cpu / 4) + (proc.priority * 2)
+                class_index = self.calculate_class(proc.ker_priority)
+
+                # DEBUG for adjust numbers.
+                print ">> Priority: [%d] to PID [%d] " % (proc.ker_priority, proc.pid)
+                print "Class: [%d] <<" % class_index
+
                 if class_index != i:
                     temp_qs[class_index].append(proc)
                     self.qs[i].remove(proc)

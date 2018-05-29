@@ -30,7 +30,8 @@ def run_simulation(event_stream):
             self.running_proc = None
         def take_cpu(self):
             taken = self.running_proc
-            taken.set_st_runnable()
+            if taken:
+                taken.set_st_runnable()
             self.running_proc = None
             return taken
         def enter_cpu(self, process):
