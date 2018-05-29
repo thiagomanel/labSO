@@ -39,13 +39,13 @@ def run_simulation(event_stream):
         previous_usage_t = proc.get_usage_t()
         proc.set_usage_t(previous_usage_t + usage_interval)
 
-    def sched(out_proc):
+    def sched(out_proc,  previous_t, current_t:
 
         out_pid = None
         if (out_proc):
             out_pid = out_proc.get_pid()
 
-        in_proc = scheduler.schedule(out_pid)
+        in_proc = scheduler.schedule(out_pid, previous_t, current_t)
         if (in_proc):
             cpu.enter_cpu(in_proc)
             remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
@@ -75,14 +75,14 @@ def run_simulation(event_stream):
             taken_proc = cpu.take_cpu()
             if (taken_proc):
                 update_usage_t(taken_proc, now() - previous_t)
-            sched(taken_proc)
+            sched(taken_proc, previous_t, Clock.now())
         elif (event.get_type() == event_types.ALLOC_PROC):
             new_proc = event.get_context()
 
             #update simulation stats
             output[new_proc.get_pid()] = (Clock.now(), new_proc.get_service_t(),
                                             new_proc.get_usage_t(), -1)
-            scheduler.alloc_proc(new_proc)
+            scheduler.alloc_proc(new_proc, previous_t, Clock.now())
         elif (event.get_type() == event_types.EXIT_PROC):
             exit_proc = event.get_context()
             exit_pid = exit_proc.get_pid()

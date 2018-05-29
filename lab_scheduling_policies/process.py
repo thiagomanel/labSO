@@ -5,6 +5,7 @@ class Process(object):
         self.priority = priority
         self.service_t = service_t
         self.usage_t = 0
+        self.p_cpu = 0
 
     def get_timestamp(self):
         return self.timestamp
@@ -23,6 +24,12 @@ class Process(object):
 
     def get_usage_t(self):
         return self.usage_t
+
+    def get_p_cpu(self):
+        return self.p_cpu
+
+    def set_p_cpu(self, p_cpu):
+        self.p_cpu = p_cpu
 
     def __repr__(self):
         return str(self.__dict__)
