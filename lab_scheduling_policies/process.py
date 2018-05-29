@@ -44,9 +44,9 @@ class Process(object):
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-        return self.__dict__ == other.__dict__
-    return False
+            return self.__dict__ == other.__dict__
+        return False
 
     def __ne__(self, other):
-    """Overrides the default implementation (unnecessary in Python 3)"""
-    return not self.__eq__(other)
+        """Overrides the default implementation (unnecessary in Python 3)"""
+        return not self.__eq__(other)
