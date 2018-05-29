@@ -14,3 +14,5 @@ class Scheduler:
 	"""Update the data structures to recognize a new process was created"""
 	pass
 
+    def exit(process_pid):
+        pass

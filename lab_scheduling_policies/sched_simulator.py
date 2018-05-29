@@ -17,7 +17,7 @@ class WorkloadParser(object):
             proc_list.append(Process(timestamp, pid, priority, service_t))
         return proc_list
 
-def run_simulation(events):
+def run_simulation(event_stream):
 
     class Clock:
         current_time = 0
@@ -28,69 +28,93 @@ def run_simulation(events):
     class CPU:
         def __init__(self):
             self.running_proc = None
-
         def take_cpu(self):
-            pid = None
-            if self.running_proc:
-                pid = self.runing_proc.get_pid()
+            taken = self.running_proc
             self.running_proc = None
-            return pid
-
+            return taken
         def enter_cpu(self, process):
             self.running_proc = process
 
-    def next_event():
-        try:
-            return events.pop(0)
-        except IndexError:
-            return None
+    def update_usage_t(proc, usage_interval):
+        previous_usage_t = proc.get_usage_t()
+        proc.set_usage_t(previous_usage_t + usage_interval)
 
-    def add_event(event):
-        bisect.insort_left(events, event)
+    def sched(out_proc):
 
-    def has_next_event():
-        return len(events) > 0
+        out_pid = None
+        if (out_proc):
+            out_pid = out_proc.get_pid()
 
-    def remaining_service_time(process):
-        return process.get_service_t() - process.get_usage_t()
+        in_proc = scheduler.schedule(out_pid)
+        if (in_proc):
+            cpu.enter_cpu(in_proc)
+            remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
+            if (remaining_t < slice_interval):
+                exit_timestamp = Clock.now() + remaining_t
+                event_stream.add(Event(event_types.EXIT, exit_timestamp, in_process))
+            else:
+                #we were not done yet, then add a new SCHEDULE event
+                if (event_stream.has_next()):
+                    schedule_timestamp = Clock.now() + SLICE_DURATION
+                    event_stream.add(Event(event_types.SCHEDULE, schedule_timestamp, None))
 
     cpu = CPU()
     scheduler = Scheduler()
 
-    output = []
+    #{pid:  (creation_t, service_t, usage_t, exit_t)}
+    output = {}
 
     while True:
-        event = next_event()
+        event = event_stream.next()
         if (not event): break
+
+        previous_t = Clock.current_time
         Clock.current_time = event.get_timestamp()
 
         if (event.get_type() == event_types.SCHEDULE):
-            #remove current process
-            pid = cpu.take_cpu()
-            if (pid):
-                #plugin hook
-                process_to_enter = scheduler.schedule(pid)
-                if (process_to_enter):
-                    if (remaining_service_time(process_to_enter)
-                            < slice_interval):
-                        #TODO:we should add a EXIT event
-                        pass
-                    else:
-                        cpu.enter(process_to_enter)
-            if (has_next_event()):
-                #if we were not done yet, add the next SCHEDULE event
-                add_event(Event(event_types.SCHEDULE, Clock.now() + SLICE_DURATION, None))
-
+            taken_proc = cpu.take_cpu()
+            if (taken_proc):
+                update_usage_t(taken_proc, now() - previous_t)
+            sched(taken_proc)
         elif (event.get_type() == event_types.ALLOC_PROC):
-            new_process = event.get_context()
-            #plugin hook
-            scheduler.alloc_proc(new_process)
+            new_proc = event.get_context()
+
+            #update simulation stats
+            output[new_proc.get_pid()] = (Clock.now(), new_proc.get_service_t(),
+                                            new_proc.get_usage_t(), -1)
+            scheduler.alloc_proc(new_proc)
+        elif (event.get_type() == event_types.EXIT_PROC):
+            exit_proc = event.get_context()
+            exit_pid = exit_proc.get_pid()
+            update_usage_t(exit_proc, now() - previous_t)
+
+            #update simulation stats
+            (creation_t, service_t, usage_t, exit_t) = output[exit_pid]
+            output[exit_pid] = (creation_t, service_t, new_proc.get_usage_t(),
+                                Clock.now())
+
+            exit_pid = exit_proc.get_pid()
+            scheduler.exit(exit_pid)
+            sched(exit_proc)
 
     return output
 
 def enum(**enums):
     return type('Enum', (), enums)
 event_types = enum(ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
+
+class EventStream:
+    def __init__(self, event_list):
+        self.events = event_list
+    def next(self):
+        try:
+            return self.events.pop(0)
+        except IndexError:
+            return None
+    def add(self, event):
+        bisect.insort_left(self.events, event)
+    def has_next(self):
+        return len(self.events) > 0
 
 class Event(object):
     def __init__(self, event_type, timestamp, context):
@@ -123,6 +147,6 @@ if __name__ == '__main__':
     events.insert(0, Event(event_types.SCHEDULE, 0, None))
 
     #fire
-    output = run_simulation(events)
-    for out_sample in output:
-        print out_sample
+    output = run_simulation(EventStream(events))
+    for pid, stat in output.iteritems():
+        print pid, stat
