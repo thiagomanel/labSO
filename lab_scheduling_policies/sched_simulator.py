@@ -30,28 +30,33 @@ def run_simulation(event_stream):
             self.running_proc = None
         def take_cpu(self):
             taken = self.running_proc
+            taken.set_st_runnable()
             self.running_proc = None
             return taken
         def enter_cpu(self, process):
             self.running_proc = process
+            self.running_proc.set_st_running()
 
     def update_usage_t(proc, usage_interval):
         previous_usage_t = proc.get_usage_t()
         proc.set_usage_t(previous_usage_t + usage_interval)
 
-    def sched(out_proc,  previous_t, current_t:
+    def process_is_done(proc):
+        return proc.get_service_t() == proc.get_usage_t
+
+    def sched(out_proc, previous_t, current_t):
 
         out_pid = None
         if (out_proc):
             out_pid = out_proc.get_pid()
 
-        in_proc = scheduler.schedule(out_pid, previous_t, current_t)
+        in_proc = scheduler.schedule(out_pid, current_t - previous_t)
         if (in_proc):
             cpu.enter_cpu(in_proc)
             remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
             if (remaining_t < slice_interval):
                 exit_timestamp = Clock.now() + remaining_t
-                event_stream.add(Event(event_types.EXIT, exit_timestamp, in_process))
+                event_stream.add(Event(event_types.EXIT, exit_timestamp, in_proc))
             else:
                 #we were not done yet, then add a new SCHEDULE event
                 if (event_stream.has_next()):
@@ -75,6 +80,9 @@ def run_simulation(event_stream):
             taken_proc = cpu.take_cpu()
             if (taken_proc):
                 update_usage_t(taken_proc, now() - previous_t)
+                if process_is_done(taken_proc):
+                    taken_proc.set_st_terminated()
+
             sched(taken_proc, previous_t, Clock.now())
         elif (event.get_type() == event_types.ALLOC_PROC):
             new_proc = event.get_context()
@@ -82,7 +90,7 @@ def run_simulation(event_stream):
             #update simulation stats
             output[new_proc.get_pid()] = (Clock.now(), new_proc.get_service_t(),
                                             new_proc.get_usage_t(), -1)
-            scheduler.alloc_proc(new_proc, previous_t, Clock.now())
+            scheduler.alloc_proc(new_proc, Clock.now() - previous_t)
         elif (event.get_type() == event_types.EXIT_PROC):
             exit_proc = event.get_context()
             exit_pid = exit_proc.get_pid()
