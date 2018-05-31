@@ -159,3 +159,20 @@ if __name__ == '__main__':
     output = run_simulation(EventStream(events))
     for pid, stat in output.iteritems():
         print pid, stat
+
+    # Generate output file.
+    try:    
+        with open('timeline-output.ffd', 'w') as out_file:
+            lines = []
+            lines.append('process service start_t end_t\n')
+            for pid in output.keys():
+                create_t = output[pid][0]
+                service_t = output[pid][1]
+                # exit_t = output[pid][3]
+                exit_t = create_t +  service_t + 50
+                expect_exit_t = create_t + service_t
+                lines.append('pid-' + str(pid) + ' expected '  + str(create_t) + ' ' + str(expect_exit_t) + '\n'
+                    + 'pid-' + str(pid) + ' real ' + str(expect_exit_t) + ' ' + str(exit_t) + '\n')
+            out_file.writelines(lines)
+    except Exception as e:
+        print 'Unable to write file property: %s.' % str(e)

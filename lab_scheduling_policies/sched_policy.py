@@ -1,6 +1,6 @@
 QS_SIZE           = 32
 TICKS_PER_SECOND  = 2
-BASELINE_PRIORITY = 20
+BASELINE_PRIORITY = 10
 
 class Scheduler:
     """ Scheduler Simulation
@@ -62,15 +62,15 @@ class Scheduler:
                 decay_factor = (2 * load_average)/(2 * load_average + 1)
                 proc.p_cpu -= (decay_factor * delta_t) # Decrement for each second.
                 if proc.state == 'RUNNING':
-                    proc.p_cpu += (TICKS_PER_SECOND * delta_t) # Incrememt for each tick.
+                    proc.p_cpu += (TICKS_PER_SECOND * (delta_t/2)) # Incrememt for each tick.
 
                 # recalculate ker_priority.
                 proc.ker_priority = BASELINE_PRIORITY + (proc.p_cpu / 4) + (proc.priority * 2)
                 class_index = self.calculate_class(proc.ker_priority)
 
                 # DEBUG for adjust numbers.
-                print ">> Priority: [%d] to PID [%d] " % (proc.ker_priority, proc.pid)
-                print "Class: [%d] <<" % class_index
+                # print ">> Priority: [%d] to PID [%d] " % (proc.ker_priority, proc.pid)
+                # print "Class: [%d] <<" % class_index
 
                 if class_index != i:
                     temp_qs[class_index].append(proc)
