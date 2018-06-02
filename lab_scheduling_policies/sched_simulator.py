@@ -162,17 +162,24 @@ if __name__ == '__main__':
 
     # Generate output file.
     try:    
-        with open('timeline-output.ffd', 'w') as out_file:
-            lines = []
-            lines.append('process service start_t end_t\n')
+        with open('timeline-output.ffd', 'w') as timeline_out_file, open('extra-time-output.ffd', 'w') as extra_time_file:
+            timeline_lines = []
+            extra_time_lines = []
+            timeline_lines.append('process service start_t end_t\n')
+
             for pid in output.keys():
                 create_t = output[pid][0]
                 service_t = output[pid][1]
-                # exit_t = output[pid][3]
+                # exit_t = output[pid][3] # TODO: Use this line as exit_t when it is fixed.
                 exit_t = create_t +  service_t + 50
                 expect_exit_t = create_t + service_t
-                lines.append('pid-' + str(pid) + ' expected '  + str(create_t) + ' ' + str(expect_exit_t) + '\n'
+                extra_t = exit_t - expect_exit_t
+
+                extra_time_lines.append(str(extra_t) + '\n') 
+                timeline_lines.append('pid-' + str(pid) + ' expected '  + str(create_t) + ' ' + str(expect_exit_t) + '\n'
                     + 'pid-' + str(pid) + ' real ' + str(expect_exit_t) + ' ' + str(exit_t) + '\n')
-            out_file.writelines(lines)
+
+            timeline_out_file.writelines(timeline_lines)
+            extra_time_file.writelines(extra_time_lines)
     except Exception as e:
         print 'Unable to write file property: %s.' % str(e)
