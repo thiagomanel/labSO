@@ -55,7 +55,6 @@ def run_simulation(event_stream):
         if (in_proc):
             cpu.enter_cpu(in_proc)
             remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
-            print "sched->in_proc " + str(in_proc) + " remaining " + str(remaining_t)
             if ( remaining_t < SLICE_DURATION and remaining_t > 0):
                 exit_timestamp = Clock.now() + remaining_t
                 event_stream.add(Event(event_types.EXIT_PROC, exit_timestamp, in_proc))
@@ -66,19 +65,20 @@ def run_simulation(event_stream):
     #{pid:  (creation_t, service_t, usage_t, exit_t)}
     output = {}
 
+    #FIXME: this is to be removed after testing with the default scheduler
     active_procs = 0
     count = 0
     while True:
+        #FIXME: this is to be removed after testing with the default scheduler
         if (count >= 50):
             exit(0)
+        #FIXME: this is to be removed after testing with the default scheduler
         count = count + 1
         event = event_stream.next()
         if (not event): break
 
         previous_t = Clock.current_time
         Clock.current_time = event.get_timestamp()
-
-        print("stream length: " + str(event_stream.len()) + " event: " + str(event))
 
         if (event.get_type() == event_types.SCHEDULE):
 
@@ -96,26 +96,26 @@ def run_simulation(event_stream):
             #update simulation stats
             output[new_proc.get_pid()] = (Clock.now(), new_proc.get_service_t(), new_proc.get_usage_t(), -1)
             scheduler.alloc_proc(new_proc, Clock.now() - previous_t)
+            #FIXME: this is to be removed after testing with the default scheduler
             active_procs = active_procs + 1
 
         elif (event.get_type() == event_types.EXIT_PROC):
 
             exit_proc = event.get_context()
 
-            print "exit_proc " + str(exit_proc)
             exit_pid = exit_proc.get_pid()
 
             update_usage_t(exit_proc, Clock.now() - previous_t)
             if process_is_done(exit_proc):
                 exit_proc.set_st_terminated()
 
-            print "exit_proc set_state" + str(exit_proc)
             #update simulation stats
             (creation_t, service_t, usage_t, exit_t) = output[exit_pid]
             output[exit_pid] = (creation_t, service_t, exit_proc.get_usage_t(), Clock.now())
 
             exit_pid = exit_proc.get_pid()
             scheduler.exit(exit_pid)
+            #FIXME: this is to be removed after testing with the default scheduler
             active_procs = active_procs - 1
             sched(exit_proc, previous_t, Clock.now())
 
@@ -184,17 +184,24 @@ if __name__ == '__main__':
 
     # Generate output file.
     try:
-        with open('timeline-output.ffd', 'w') as out_file:
-            lines = []
-            lines.append('process service start_t end_t\n')
+        with open('timeline-output.ffd', 'w') as timeline_out_file, open('extra-time-output.ffd', 'w') as extra_time_file:
+            timeline_lines = []
+            extra_time_lines = []
+            timeline_lines.append('process service start_t end_t\n')
+
             for pid in output.keys():
                 create_t = output[pid][0]
                 service_t = output[pid][1]
-                # exit_t = output[pid][3]
+                # exit_t = output[pid][3] # TODO: Use this line as exit_t when it is fixed.
                 exit_t = create_t +  service_t + 50
                 expect_exit_t = create_t + service_t
-                lines.append('pid-' + str(pid) + ' expected '  + str(create_t) + ' ' + str(expect_exit_t) + '\n'
+                extra_t = exit_t - expect_exit_t
+
+                extra_time_lines.append(str(extra_t) + '\n')
+                timeline_lines.append('pid-' + str(pid) + ' expected '  + str(create_t) + ' ' + str(expect_exit_t) + '\n'
                     + 'pid-' + str(pid) + ' real ' + str(expect_exit_t) + ' ' + str(exit_t) + '\n')
-            out_file.writelines(lines)
+
+            timeline_out_file.writelines(timeline_lines)
+            extra_time_file.writelines(extra_time_lines)
     except Exception as e:
         print 'Unable to write file property: %s.' % str(e)
