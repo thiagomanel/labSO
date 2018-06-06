@@ -10,6 +10,10 @@ Repositório de código para disciplina Laboratório de Sistemas Operacionais da
 
 * [Lab 3 - Avaliação de politicas de escalonamento baseadas em prioridades](https://docs.google.com/document/d/1ChRk-5M-ZLhOLJwRE-r_d29mvcpm9eKZOHRcjdp4I0o/edit?usp=sharing)
 
+* [Lab 4 - Avaliação de politicas de reposição de página](https://docs.google.com/document/d/1hAXUd3e9ihEtY1OdKNwhx53HKnd1uVvdtUtKRqDK-LQ/edit?usp=sharing)
+
+* [Lab 5 - Avaliação de impacto do uso de TLB no desempenho do mecanismo de tradução de endereços] https://docs.google.com/document/d/1rTyASjpTQerUoJVGfmEXRc7BL5SVP_Uzlqu5x6mPvoA/edit?usp=sharing)
+
 
 ## Histórico
 
