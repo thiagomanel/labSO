@@ -1,0 +1,13 @@
+#!/bin/bash
+# This is the reference string generator
+
+num_refs=$1
+num_pages=$2
+
+for i in `seq $num_refs`
+do
+    number=$RANDOM
+    let "number %= $num_pages"
+    echo $number r
+done
+
