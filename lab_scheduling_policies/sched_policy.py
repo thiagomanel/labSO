@@ -25,7 +25,13 @@ class Scheduler:
         proc_to_alloc = None
         for class_ in self.qs:
             if class_:
-                proc_to_alloc = class_.pop(0)
+                proc_index = -1
+                for i in xrange(len(class_)):
+                    if class_[i].state == 'RUNNABLE':
+                        proc_index = i
+                if proc_index == -1:
+                    continue
+                proc_to_alloc = class_.pop(proc_index)
                 class_.append(proc_to_alloc)
                 return proc_to_alloc
 
@@ -53,16 +59,10 @@ class Scheduler:
         temp_qs = [ [] for i in xrange(QS_SIZE)]
         for i in xrange(QS_SIZE):
             p_runnable_c = 0
-            to_discart = []
+
             for proc in self.qs[i]:
-                if proc.state == 'TERMINATED':
-                    to_discart.append(proc)
                 if proc.state == 'RUNNABLE':
                     p_runnable_c += 1
-
-            # Discart terminated process.
-            for proc in to_discart:
-                self.qs[i].remove(proc)
 
             load_average = (p_runnable_c / len(self.qs[i])) if len(self.qs[i]) != 0 else 0
             for proc in self.qs[i]:
