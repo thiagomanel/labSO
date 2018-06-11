@@ -1,7 +1,10 @@
+import sys
 from sys import stderr
 from process import Process
 from sched_policy import Scheduler
-import bisect
+from sim_engine import Event
+from sim_engine import EventStream
+import uuid
 
 class WorkloadParser(object):
     def parse(self, filename):
@@ -25,44 +28,45 @@ def run_simulation(event_stream):
         def now(cls):
             return Clock.current_time
 
+    class ProcTable:
+        def __init__(self):
+            self.procs = {}
+        def add(self, proc):
+            self.procs[proc.get_pid()] = proc
+        def remove(self, proc):
+            self.procs.pop(proc.get_pid(), None)
+        def size(self):
+            return len(self.procs)
+
     class CPU:
         def __init__(self):
             self.running_proc = None
         def take_cpu(self):
             taken = self.running_proc
+            if taken:
+                assert taken.get_state() == Process.RUNNING
+                taken.set_state(Process.RUNNABLE)
             self.running_proc = None
             return taken
         def enter_cpu(self, process):
+            assert process.get_state() == Process.RUNNABLE
             self.running_proc = process
+            self.running_proc.set_state(Process.RUNNING)
 
     def update_usage_t(proc, usage_interval):
         previous_usage_t = proc.get_usage_t()
         proc.set_usage_t(previous_usage_t + usage_interval)
 
-    def sched(out_proc):
+    def process_is_done(proc):
+        return proc.get_service_t() <= proc.get_usage_t()
 
-        out_pid = None
-        if (out_proc):
-            out_pid = out_proc.get_pid()
-
-        in_proc = scheduler.schedule(out_pid)
-        if (in_proc):
-            cpu.enter_cpu(in_proc)
-            remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
-            if (remaining_t < slice_interval):
-                exit_timestamp = Clock.now() + remaining_t
-                event_stream.add(Event(event_types.EXIT, exit_timestamp, in_process))
-            else:
-                #we were not done yet, then add a new SCHEDULE event
-                if (event_stream.has_next()):
-                    schedule_timestamp = Clock.now() + SLICE_DURATION
-                    event_stream.add(Event(event_types.SCHEDULE, schedule_timestamp, None))
-
+    #init main loop
     cpu = CPU()
     scheduler = Scheduler()
+    p_table = ProcTable()
 
-    #{pid:  (creation_t, service_t, usage_t, exit_t)}
-    output = {}
+    #procs seen during simulation, to generate output
+    procs = []
 
     while True:
         event = event_stream.next()
@@ -72,81 +76,108 @@ def run_simulation(event_stream):
         Clock.current_time = event.get_timestamp()
 
         if (event.get_type() == event_types.SCHEDULE):
-            taken_proc = cpu.take_cpu()
-            if (taken_proc):
-                update_usage_t(taken_proc, now() - previous_t)
-            sched(taken_proc)
+
+            #remove old runnning proc
+            out_proc = cpu.take_cpu()
+            out_pid = None
+
+            #update out proc stats
+            if (out_proc):
+                update_usage_t(out_proc, Clock.now() - previous_t)
+                out_pid = out_proc.get_pid()
+
+            #choose the next proc to enter cpu
+            in_proc = scheduler.schedule(out_pid, Clock.now() - previous_t)
+
+            #enter cpu and schedule an exit event, if necessary
+            if (in_proc):
+                cpu.enter_cpu(in_proc)
+                remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
+                if (remaining_t < SLICE_DURATION and remaining_t > 0):
+                    exit_timestamp = Clock.now() + remaining_t
+                    event_stream.add(Event(event_types.EXIT_PROC, exit_timestamp, in_proc))
+
         elif (event.get_type() == event_types.ALLOC_PROC):
+
             new_proc = event.get_context()
 
             #update simulation stats
-            output[new_proc.get_pid()] = (Clock.now(), new_proc.get_service_t(),
-                                            new_proc.get_usage_t(), -1)
-            scheduler.alloc_proc(new_proc)
+            new_proc.set_creation_t(Clock.now())
+
+            p_table.add(new_proc)
+            scheduler.alloc_proc(new_proc, Clock.now() - previous_t)
+            procs.append(new_proc)
+
         elif (event.get_type() == event_types.EXIT_PROC):
+
             exit_proc = event.get_context()
-            exit_pid = exit_proc.get_pid()
-            update_usage_t(exit_proc, now() - previous_t)
+
+            #remove from cpu
+            cpu.take_cpu()
+
+            update_usage_t(exit_proc, Clock.now() - previous_t)
+            if process_is_done(exit_proc):
+                exit_proc.set_state(Process.TERMINATED)
 
             #update simulation stats
-            (creation_t, service_t, usage_t, exit_t) = output[exit_pid]
-            output[exit_pid] = (creation_t, service_t, new_proc.get_usage_t(),
-                                Clock.now())
+            exit_proc.set_exit_t(Clock.now())
 
+            #clean state
             exit_pid = exit_proc.get_pid()
             scheduler.exit(exit_pid)
-            sched(exit_proc)
+            p_table.remove(exit_proc)
 
-    return output
+            #force a new proc to enter the cpu
+            event_stream.add(Event(event_types.SCHEDULE, Clock.now() + 1, None))
+
+        #we were not done yet, then add a new SCHEDULE event
+        if (p_table.size() > 0):
+            schedule_timestamp = Clock.now() + SLICE_DURATION
+            event_stream.add(Event(event_types.SCHEDULE, schedule_timestamp, None))
+
+    return procs
 
 def enum(**enums):
     return type('Enum', (), enums)
 event_types = enum(ALLOC_PROC=1, EXIT_PROC=2, SCHEDULE=3)
 
-class EventStream:
-    def __init__(self, event_list):
-        self.events = event_list
-    def next(self):
-        try:
-            return self.events.pop(0)
-        except IndexError:
-            return None
-    def add(self, event):
-        bisect.insort_left(self.events, event)
-    def has_next(self):
-        return len(self.events) > 0
-
-class Event(object):
-    def __init__(self, event_type, timestamp, context):
-        self.event_type = event_type
-        self.timestamp = timestamp
-        self.context = context
-    def __lt__(self, other):
-        return self.timestamp < other.timestamp
-    def __gt__(self, other):
-        return self.timestamp < other.timestamp
-    def __str__(self):
-        return 'type: ' + str(self.event_type) + ' stamp: ' + str(self.timestamp) + ' context: ' + str(self.context)
-    def get_type(self):
-        return self.event_type
-    def get_timestamp(self):
-        return self.timestamp
-    def get_context(self):
-        return self.context
-
 SLICE_DURATION = 20
+
+def generate_output(out):
+    # Generate output file.
+    try:
+        with open('timeline-output.ffd', 'w') as timeline_out_file, open('extra-time-output.ffd', 'w') as extra_time_file:
+            timeline_lines = []
+            extra_time_lines = []
+            timeline_lines.append('process service start_t end_t\n')
+
+            for proc in out:
+                expect_exit_t = proc.get_creation_t() + proc.get_service_t()
+                extra_t = proc.get_exit_t() - expect_exit_t
+
+                extra_time_lines.append(str(extra_t) + '\n')
+                pid = proc.get_pid()
+                timeline_lines.append(str(pid) + ' expected '  + str(proc.get_creation_t()) + ' ' + str(expect_exit_t) + '\n'
+                    + str(pid) + ' real ' + str(expect_exit_t) + ' ' + str(proc.get_exit_t()) + '\n')
+
+            timeline_out_file.writelines(timeline_lines)
+            extra_time_file.writelines(extra_time_lines)
+    except Exception as e:
+        print 'Unable to write file property: %s.' % str(e)
 
 if __name__ == '__main__':
     #read workload file in the standard directory
     wlp = WorkloadParser()
-    ordered_process_list = wlp.parse('workload_file.ffd')
+
+    input_file = sys.argv[1]
+    ordered_process_list = wlp.parse(input_file)
     events = [Event(event_types.ALLOC_PROC, proc.get_timestamp(), proc)
                 for proc in ordered_process_list]
 
     #add an schedule event to proper fire the engine
     events.insert(0, Event(event_types.SCHEDULE, 0, None))
+    e_stream = EventStream(events)
 
     #fire
-    output = run_simulation(EventStream(events))
-    for pid, stat in output.iteritems():
-        print pid, stat
+    output = run_simulation(e_stream)
+    generate_output(output)

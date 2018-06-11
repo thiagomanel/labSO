@@ -1,2 +1,5 @@
-*/.pyc
-*/.py~
+.Rhistory
+.vscode
+*.pyc
+*.py~
+*.ffd
