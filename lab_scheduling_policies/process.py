@@ -1,13 +1,32 @@
 class Process(object):
+
+    RUNNABLE = 0
+    RUNNING = 1
+    TERMINATED = 2
+
     def __init__(self, timestamp, pid, priority, service_t):
         self.timestamp = timestamp
         self.pid = pid
-        self.state = 'RUNNABLE'
+        self.state = Process.RUNNABLE
         self.priority = priority
         self.ker_priority = priority
         self.service_t = service_t
         self.usage_t = 0
         self.p_cpu = 0
+        self.creation_t = -1
+        self.exit_t = -1
+
+    def get_creation_t(self):
+        return self.creation_t
+
+    def set_creation_t(self, stamp):
+        self.creation_t = stamp
+
+    def get_exit_t(self):
+        return self.exit_t
+
+    def set_exit_t(self, stamp):
+        self.exit_t = stamp
 
     def get_timestamp(self):
         return self.timestamp
@@ -18,14 +37,9 @@ class Process(object):
     def get_state(self):
         return self.state
 
-    def set_st_runnable(self):
-        self.state = 'RUNNABLE'
-
-    def set_st_running(self):
-        self.state = 'RUNNING'
-
-    def set_st_terminated(self):
-        self.state = 'TERMINATED'
+    def set_state(self, state):
+        assert state in [Process.RUNNABLE, Process.RUNNING, Process.TERMINATED]
+        self.state = state
 
     def get_priority(self):
         return self.priority

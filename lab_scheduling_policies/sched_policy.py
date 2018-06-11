@@ -1,6 +1,7 @@
 QS_SIZE           = 32
 TICKS_PER_SECOND  = 2
 BASELINE_PRIORITY = 10
+from process import Process
 
 class Scheduler:
     """ Scheduler Simulation
@@ -27,7 +28,7 @@ class Scheduler:
             if class_:
                 proc_index = -1
                 for i in xrange(len(class_)):
-                    if class_[i].state == 'RUNNABLE':
+                    if class_[i].state == Process.RUNNABLE:
                         proc_index = i
                 if proc_index == -1:
                     continue
@@ -53,7 +54,6 @@ class Scheduler:
             index_class += 1
         return index_class -1
 
-
     def _update_proc_fields(self, delta_t):
         # update proc fields and reorganize the qs structure.
         temp_qs = [ [] for i in xrange(QS_SIZE)]
@@ -61,14 +61,14 @@ class Scheduler:
             p_runnable_c = 0
 
             for proc in self.qs[i]:
-                if proc.state == 'RUNNABLE':
+                if proc.state == Process.RUNNABLE:
                     p_runnable_c += 1
 
             load_average = (p_runnable_c / len(self.qs[i])) if len(self.qs[i]) != 0 else 0
             for proc in self.qs[i]:
                 decay_factor = (2 * load_average)/(2 * load_average + 1)
                 proc.p_cpu -= (decay_factor * delta_t) # Decrement for each second.
-                if proc.state == 'RUNNING':
+                if proc.state == Process.RUNNING:
                     proc.p_cpu += (TICKS_PER_SECOND * (delta_t/2)) # Incrememt for each tick.
 
                 # recalculate ker_priority.
