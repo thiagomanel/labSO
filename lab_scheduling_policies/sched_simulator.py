@@ -44,8 +44,9 @@ def run_simulation(event_stream):
         def take_cpu(self):
             taken = self.running_proc
             if taken:
-                assert taken.get_state() == Process.RUNNING
-                taken.set_state(Process.RUNNABLE)
+                assert taken.get_state() == Process.RUNNING or taken.get_state() == Process.CLOSED 
+                if (taken.get_state() != Process.CLOSED): 
+					taken.set_state(Process.RUNNABLE)
             self.running_proc = None
             return taken
         def enter_cpu(self, process):
@@ -90,12 +91,15 @@ def run_simulation(event_stream):
             in_proc = scheduler.schedule(out_pid, Clock.now() - previous_t)
 
             #enter cpu and schedule an exit event, if necessary
-            if (in_proc):
+            if (in_proc and in_proc.get_state() != Process.CLOSED):
                 cpu.enter_cpu(in_proc)
                 remaining_t = in_proc.get_service_t() - in_proc.get_usage_t()
-                if (remaining_t < SLICE_DURATION and remaining_t > 0):
-                    exit_timestamp = Clock.now() + remaining_t
-                    event_stream.add(Event(event_types.EXIT_PROC, exit_timestamp, in_proc))
+                if (remaining_t < SLICE_DURATION and remaining_t >= 0):
+					exit_timestamp = Clock.now() + remaining_t
+					if (remaining_t == 0):
+						exit_timestamp += 1
+					in_proc.set_state(Process.CLOSED)
+					event_stream.add(Event(event_types.EXIT_PROC, exit_timestamp, in_proc))
 
         elif (event.get_type() == event_types.ALLOC_PROC):
 

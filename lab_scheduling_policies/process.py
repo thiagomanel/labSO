@@ -3,6 +3,7 @@ class Process(object):
     RUNNABLE = 0
     RUNNING = 1
     TERMINATED = 2
+    CLOSED = 3
 
     def __init__(self, timestamp, pid, priority, service_t):
         self.timestamp = timestamp
@@ -38,7 +39,7 @@ class Process(object):
         return self.state
 
     def set_state(self, state):
-        assert state in [Process.RUNNABLE, Process.RUNNING, Process.TERMINATED]
+        assert state in [Process.RUNNABLE, Process.RUNNING, Process.TERMINATED, Process.CLOSED]
         self.state = state
 
     def get_priority(self):
