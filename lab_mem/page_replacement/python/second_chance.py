@@ -13,6 +13,8 @@ class SecondChance:
     """Deallocates a frame from the physical memory and returns its frameId"""
     # You may assume the physical memory is FULL so we need space!
     # Your code must decide which frame to return, according to the algorithm
+    # Se página mais antiga possui bit R=0, ela é removida.
+    # – Se tiver bit R=1, o bit é zerado, e a página é colocada no final da fila,. Ou seja: dá se uma 2a chance
     indexOldFrame = 0
     if self.allocatedFrames[indexOldFrame].is_referenced():
         self.allocatedFrames[indexOldFrame].set_referenced(False)

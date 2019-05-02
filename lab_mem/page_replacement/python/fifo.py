@@ -13,6 +13,7 @@ class fifo:
     """Deallocates a frame from the physical memory and returns its frameId"""
     # You may assume the physical memory is FULL so we need space!
     # Your code must decide which frame to return, according to the algorithm
+    # A página (mais antiga), no início da fila, é a primeira ser descartada
     indexOldFrame = 0
     return
     # return self.frame_id 
