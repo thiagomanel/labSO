@@ -7,6 +7,10 @@ nfaults,nframes,alg
 98035,32,fifo
 302856,4,fifo
 205360,8,fifo
+117656,16,lru
+84819,32,lru
+248786,4,lru
+172237,8,lru
 174676,16,nru
 90670,32,nru
 404042,4,nru

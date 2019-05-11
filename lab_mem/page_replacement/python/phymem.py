@@ -19,7 +19,7 @@ class PhysicalMemory:
   """How many bits to use for the Aging algorithm"""
 
   def __init__(self, algorithmType):
-    assert algorithmType in {"fifo", "nru", "aging", "second-chance"}
+    assert algorithmType in {"fifo", "nru", "aging", "second-chance", "lru"}
     
     if algorithmType == "fifo":
         self.algorithm = FIFO()
