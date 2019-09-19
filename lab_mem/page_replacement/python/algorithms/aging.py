@@ -2,7 +2,7 @@
 
 # This file will be imported from the main code. The PhysicalMemory class
 # will be instantiated with the algorithm received from the input. You may edit
-# this file as you which
+# this file as you whish
 
 # NOTE: there may be methods you don't need to modify, you must decide what
 # you need...

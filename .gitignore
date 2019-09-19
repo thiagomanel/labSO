@@ -3,5 +3,5 @@
 *.pyc
 *.py~
 *.ffd
-lab_mem/page_replacement/python/output/
+lab_mem/page_replacement/python/output/*
 

@@ -15,5 +15,5 @@ algorithms = {
 }
 
 def get_algorithm(algorithm_name):
-    assert algorithm_name in algorithms.keys(), "ERROR: Algorithm not found"
+    assert algorithm_name in algorithms.keys(), "ERROR: Algorithm %s not found"%algorithm_name
     return algorithms[algorithm_name]

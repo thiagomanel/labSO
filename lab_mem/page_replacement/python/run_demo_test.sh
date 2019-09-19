@@ -1,6 +1,6 @@
 #/bin/bash
 
-# This script uses a minimal workload. It only purpose is for debbuging and better understanding of your code
+# This script uses a minimal workload. It's only purpose is for debbuging and better understanding of your code
 
 npages=7
 clock=2
