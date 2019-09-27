@@ -37,17 +37,15 @@ class Simulation():
             page_id, acc_mode = load
             fault_counter += self.vMem.access(page_id, acc_mode)
 
-        #TODO
-        # collect results
-        # write output
-        print(fault_counter, " ".join(sys.argv[1:]))
+        return fault_counter
 
 if __name__ == "__main__":
-    print(sys.argv)
+    #print(sys.argv)
     # Usage: python $0 num_pages num_frames algo clock
     num_pages = int(sys.argv[1])
     num_frames = int(sys.argv[2])
     alg_name = sys.argv[3]
     clock = int(sys.argv[4])
 
-    Simulation(alg_name, num_pages, num_frames, clock).run_simulation()
+    fault_counter = Simulation(alg_name, num_pages, num_frames, clock).run_simulation()
+    print fault_counter, num_frames, alg_name
